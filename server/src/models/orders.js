@@ -2,6 +2,27 @@ const mongoose = require("mongoose");
 
 const { ORDER_STATUS, PAYMENT_STATUS } = require('../constants/order.constant');
 
+const orderItemSchema = new mongoose.Schema(
+    {
+        productName: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1,
+        },
+        price: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+    },
+    { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
     {
         orderId: {
@@ -23,11 +44,13 @@ const orderSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-        productName: {
-            type: String,
+        items: {
+            type: [orderItemSchema],
             required: true,
-            trim: true,
-            maxLength: 150,
+            validate: {
+                validator: (items) => items.length > 0,
+                message: "Order must contain at least one item.",
+            },
         },
         amount: {
             type: Number,
