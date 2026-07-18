@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema(
             trim: true,
             maxLength:100
         },
-        phone: {
+        phoneNumber: {
             type: String,
             required: true,
             trim: true
