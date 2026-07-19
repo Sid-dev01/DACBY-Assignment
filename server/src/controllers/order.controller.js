@@ -16,6 +16,34 @@ class OrderController {
             next(error);
         }
     }
+
+    async getOrders(req, res, next) {
+        try{
+            const orders = await OrderService.getOrders(req.validateData.query);
+
+            return res.status(200).json({
+                success: true,
+                message: "Orders fetched successfully.",
+                data: orders,
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    async getOrderById(req, res, next) {
+        try{
+            const order = await OrderService.getOrderById(req.validateData.params.orderId);
+
+            return res.status(200).json({
+                success: true,
+                message: "Order fetched successfully.",
+                data: order
+            })
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 

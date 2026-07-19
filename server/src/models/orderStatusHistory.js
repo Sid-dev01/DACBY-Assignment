@@ -19,6 +19,11 @@ const orderStatusHistorySchema  = new mongoose.Schema(
             enum: Object.values(ORDER_STATUS),
             required: true,
         },
+        changedBy:{
+            type: String,
+            enum: ["Scheduler"],
+            default: "Scheduler"
+        },
         remarks: {
             type: String,
             trim: true,
