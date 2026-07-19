@@ -1,5 +1,6 @@
 const { z } = require("zod");
 
+const { PAGINATION } = require('../constants/pagination.constant')
 const { ORDER_STATUS, PAYMENT_STATUS } = require('../constants/order.constant')
 
 const phoneRegex = /^[6-9]\d{9}$/;
@@ -50,6 +51,56 @@ const createOrderSchema = z.object({
     })
 })
 
+const getOrderSchema = z.object({
+    query: z.object({
+        page:z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional(),
+
+        limit: z.coerce
+        .number()
+        .int()
+        .positive()
+        .max(PAGINATION.MAX_LIMIT)
+        .optional(),
+
+        orderStatus: z
+        .enum(Object.values(ORDER_STATUS))
+        .optional(),
+
+        paymentStatus: z
+        .enum(Object.values(PAYMENT_STATUS))
+        .optional(),
+
+        sortBy: z
+        .enum([
+            "createdAt",
+            "amount",
+            "customerName",
+            "orderStatus",
+            "paymentStatus",
+        ])
+        .optional(),
+
+        order: z
+        .enum(["asc", "desc"])
+        .optional(),
+    })
+});
+
+const getOrderByIdSchema = z.object({
+    params: z.object({
+        orderId: z
+        .string()
+        .trim()
+        .min(1, "OrderId is required"),
+    })
+})
+
 module.exports = {
-    createOrderSchema
+    createOrderSchema,
+    getOrderSchema,
+    getOrderByIdSchema,
 }

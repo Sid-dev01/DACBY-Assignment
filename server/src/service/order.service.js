@@ -1,6 +1,7 @@
 const AppError = require('../utils/appError');
 const generateOrderId = require('../utils/generateOrderId');
 const OrderRepository = require('../repositories/order.repository');
+const { PAGINATION } = require('../constants/pagination.constant')
 const { ORDER_STATUS, PAYMENT_STATUS } = require('../constants/order.constant');
 
 
@@ -34,6 +35,42 @@ class OrderService {
         }
 
         throw new AppError('Failed to create order after multiple attempts', 500);
+    };
+
+    async getOrders(query) {
+
+        const page = query.page || PAGINATION.DEFAULT_PAGE;
+        const limit = query.limit || PAGINATION.DEFAULT_LIMIT;
+        const sortBy = query.sortBy || "createdAt";
+        const order = query.order ==="asc"? 1: -1
+
+        const filters = {};
+
+        if(query.orderStatus) {
+            filters.orderStatus = query.orderStatus;
+        }
+
+        if(query.paymentStatus) {
+            filters.paymentStatus = query.paymentStatus;
+        }
+
+        return await OrderRepository.find(filters, {
+            page,
+            limit,
+            sortBy,
+            order,
+        });
+    };
+
+    async getOrderById(orderId){
+
+        const order = await OrderRepository.findByOrderId(orderId);
+
+        if(!order) {
+            throw new AppError("Order not found.", 404);
+        }
+
+        return order;
     }
 }
 
