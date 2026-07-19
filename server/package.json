@@ -16,6 +16,7 @@
     "express-rate-limit": "^8.6.0",
     "mongodb": "^7.5.0",
     "mongoose": "^9.7.4",
+    "node-cron": "^4.6.0",
     "nodemon": "^3.1.14",
     "zod": "^4.4.3"
   }
