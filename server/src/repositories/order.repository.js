@@ -44,7 +44,7 @@ class OrderRepository {
             },
         },
         {
-            new: true,
+            returnDocument: "after",
             session,
         })
     }
