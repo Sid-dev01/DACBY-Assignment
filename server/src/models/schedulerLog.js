@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const { SCHEDULER_LOG_STATUS } = require('../constants/order.constant')
+const { SCHEDULER_STATUS } = require('../constants/scheduler.constant')
 
 const schedulerLogSchema = new mongoose.Schema(
     {
@@ -20,7 +20,7 @@ const schedulerLogSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        updatedOrders: {
+        totalOrdersUpdated: {
             type: Number,
             default: 0,
         },
@@ -30,7 +30,7 @@ const schedulerLogSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: Object.values(SCHEDULER_LOG_STATUS),
+            enum: Object.values(SCHEDULER_STATUS),
             required: true,
         },
         errorMessage: {
