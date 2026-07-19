@@ -30,15 +30,23 @@ class OrderRepository {
         };
     }
 
-    async updateByOrderId(orderId, updateData) {
-        return await Order.findOneAndUpdate({ orderId }, updateData,{
-            new: true,
-            runValidators: true,
+    async findOrdersByStatusOlderThan(status, cutOffTime) {
+        return await Order.find({
+            orderStatus:status,
+            updatedAt: { $lte: cutOffTime },
         });
     }
-    
-    async deleteByorderId(orderId) {
-        return await Order.findOneAndDelete({ orderId });
+
+    async updateOrderStatus(orderId, orderStatus, session) {
+        return await Order.findOneAndUpdate({orderId}, {
+            $set: {
+                orderStatus,
+            },
+        },
+        {
+            new: true,
+            session,
+        })
     }
 
 }
