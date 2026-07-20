@@ -1,10 +1,12 @@
 const express = require('express');
 const routes = require('./routes/index');
 const errorHandler = require('./middlewares/errorHandler');
+const corsMiddleware = require('./middlewares/cors.middleware');
 
 
 const app = express();
 
+app.use(corsMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
