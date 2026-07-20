@@ -16,7 +16,6 @@ router.post(
 
 router.get(
     '/logs',
-    schedulerAuth,
     validateRequest(getSchedulerLogsSchema),
     SchedulerController.getSchedulerLogs
 )

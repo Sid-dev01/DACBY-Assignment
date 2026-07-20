@@ -7,7 +7,6 @@ type RunSchedulerOptions = {
 }
 
 type FetchSchedulerLogsOptions = {
-  secret: string
   signal?: AbortSignal
   status?: SchedulerStatus
 }
@@ -40,9 +39,6 @@ export async function fetchSchedulerLogs(options: FetchSchedulerLogsOptions) {
   }
 
   const data = await apiRequest<SchedulerLogsPayload>(`/scheduler/logs?${query.toString()}`, {
-    headers: {
-      'x-scheduler-secret': options.secret,
-    },
     signal: options.signal,
   })
   const logs = data?.logs ?? []

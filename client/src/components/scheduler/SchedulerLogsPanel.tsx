@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { fetchSchedulerLogs, runScheduler } from '../../api/scheduler'
 import { schedulerStatusLabels, schedulerStatusOptions } from '../../constants/scheduler'
 import { badgeClass } from '../../utils/badges'
@@ -15,44 +15,60 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
   const [logs, setLogs] = useState<SchedulerLog[]>([])
   const [totalLogs, setTotalLogs] = useState(0)
   const [statusFilter, setStatusFilter] = useState<SchedulerStatusFilter>('ALL')
-  const [hasLoadedLogs, setHasLoadedLogs] = useState(false)
-  const [isLoadingLogs, setIsLoadingLogs] = useState(false)
+  const [isLoadingLogs, setIsLoadingLogs] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  async function loadSchedulerLogs(options: { secretOverride?: string; showLoading?: boolean } = {}) {
-    const trimmedSecret = options.secretOverride ?? schedulerSecret.trim()
+  const loadSchedulerLogs = useCallback(
+    async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
+      try {
+        if (options.showLoading ?? true) {
+          setIsLoadingLogs(true)
+        }
 
-    if (!trimmedSecret) {
-      setErrorMessage('Scheduler secret is required to fetch logs.')
-      return
-    }
+        setErrorMessage('')
 
-    try {
-      if (options.showLoading ?? true) {
-        setIsLoadingLogs(true)
+        const result = await fetchSchedulerLogs({
+          signal: options.signal,
+          status: statusFilter === 'ALL' ? undefined : statusFilter,
+        })
+
+        if (options.signal?.aborted) {
+          return
+        }
+
+        setLogs(result.logs)
+        setTotalLogs(result.total)
+      } catch (error) {
+        if (options.signal?.aborted) {
+          return
+        }
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : 'Something went wrong while fetching scheduler logs.',
+        )
+      } finally {
+        if (!options.signal?.aborted) {
+          setIsLoadingLogs(false)
+        }
       }
+    },
+    [statusFilter],
+  )
 
-      setErrorMessage('')
+  useEffect(() => {
+    const controller = new AbortController()
+    const timeoutId = window.setTimeout(() => {
+      void loadSchedulerLogs({ signal: controller.signal })
+    }, 0)
 
-      const result = await fetchSchedulerLogs({
-        secret: trimmedSecret,
-        status: statusFilter === 'ALL' ? undefined : statusFilter,
-      })
-
-      setLogs(result.logs)
-      setTotalLogs(result.total)
-      setHasLoadedLogs(true)
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : 'Something went wrong while fetching scheduler logs.',
-      )
-    } finally {
-      setIsLoadingLogs(false)
+    return () => {
+      window.clearTimeout(timeoutId)
+      controller.abort()
     }
-  }
+  }, [loadSchedulerLogs])
 
   async function handleRunScheduler() {
     const trimmedSecret = schedulerSecret.trim()
@@ -69,7 +85,7 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
       await runScheduler({ secret: trimmedSecret })
 
       onSchedulerSuccess()
-      await loadSchedulerLogs({ showLoading: false, secretOverride: trimmedSecret })
+      await loadSchedulerLogs({ showLoading: false })
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -116,7 +132,7 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
                 setErrorMessage('')
               }}
               autoComplete="new-password"
-              placeholder="x-scheduler-secret"
+              placeholder="Only needed to run scheduler"
             />
           </label>
           <button
@@ -125,7 +141,7 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
             onClick={() => void loadSchedulerLogs()}
             disabled={isLoadingLogs || isRunning}
           >
-            {isLoadingLogs ? 'Loading...' : hasLoadedLogs ? 'Refresh logs' : 'Load logs'}
+            {isLoadingLogs ? 'Loading...' : 'Refresh logs'}
           </button>
           <button
             className="button button-primary"
@@ -145,12 +161,10 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
       ) : null}
 
       {!errorMessage && !logs.length && !isLoadingLogs ? (
-        <StateCard title={isRunning ? 'Scheduler is running' : hasLoadedLogs ? 'No scheduler logs found' : 'Scheduler logs'}>
+        <StateCard title={isRunning ? 'Scheduler is running' : 'No scheduler logs found'}>
           {isRunning
             ? 'The scheduler response will appear here after the API finishes.'
-            : hasLoadedLogs
-              ? 'No scheduler runs match the selected status filter.'
-              : 'Enter the scheduler secret and click Load logs.'}
+            : 'No scheduler runs match the selected status filter.'}
         </StateCard>
       ) : null}
 
