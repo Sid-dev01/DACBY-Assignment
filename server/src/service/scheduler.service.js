@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { ORDER_STATUS } = require("../constants/order.constant")
+const { PAGINATION } = require("../constants/pagination.constant")
 const OrderRepository = require("../repositories/order.repository")
 const SchedulerRepository = require("../repositories/scheduler.repository")
 const { SCHEDULER, SCHEDULER_STATUS } = require("../constants/scheduler.constant")
@@ -95,15 +96,35 @@ class SchedulerService {
             endedAt,
             durationInMs: Date.now() - startTime,
             totalOrdersChecked: placedResult.checked + processingResult.checked,
-            updatedOrders: placedResult.updated + processingResult.updated,
+            totalOrdersUpdated: placedResult.updated + processingResult.updated,
             failedOrders: placedResult.failed + processingResult.failed,
             status: placedResult.failed + processingResult.failed > 0
                 ? SCHEDULER_STATUS.PARTIAL_SUCCESS : SCHEDULER_STATUS.SUCCESS
         };
 
-        await SchedulerRepository.createSchedulerLog(schedulerLog);
+        const createdLog = await SchedulerRepository.createSchedulerLog(schedulerLog);
 
-        return schedulerLog;
+        return createdLog;
+    }
+
+    async getSchedulerLogs(query) {
+        const page = query.page || PAGINATION.DEFAULT_PAGE;
+        const limit = query.limit || PAGINATION.DEFAULT_LIMIT;
+        const sortBy = query.sortBy || "createdAt";
+        const order = query.order === "asc" ? 1 : -1;
+
+        const filters = {};
+
+        if(query.status) {
+            filters.status = query.status;
+        }
+
+        return await SchedulerRepository.findSchedulerLogs(filters, {
+            page,
+            limit,
+            sortBy,
+            order,
+        });
     }
 }
 
