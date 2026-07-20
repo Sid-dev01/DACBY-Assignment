@@ -10,17 +10,30 @@ type SchedulerLogsPanelProps = {
   onSchedulerSuccess: () => void
 }
 
+const pageSizeOptions = [5, 10, 20, 50]
+
 export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelProps) {
   const [schedulerSecret, setSchedulerSecret] = useState('')
   const [logs, setLogs] = useState<SchedulerLog[]>([])
   const [totalLogs, setTotalLogs] = useState(0)
   const [statusFilter, setStatusFilter] = useState<SchedulerStatusFilter>('ALL')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [isLoadingLogs, setIsLoadingLogs] = useState(true)
   const [isRunning, setIsRunning] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const totalPages = Math.max(1, Math.ceil(totalLogs / pageSize))
+  const firstVisibleLog = totalLogs ? (currentPage - 1) * pageSize + 1 : 0
+  const lastVisibleLog = Math.min(currentPage * pageSize, totalLogs)
 
   const loadSchedulerLogs = useCallback(
-    async (options: { signal?: AbortSignal; showLoading?: boolean } = {}) => {
+    async (
+      options: {
+        pageOverride?: number
+        signal?: AbortSignal
+        showLoading?: boolean
+      } = {},
+    ) => {
       try {
         if (options.showLoading ?? true) {
           setIsLoadingLogs(true)
@@ -29,6 +42,8 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
         setErrorMessage('')
 
         const result = await fetchSchedulerLogs({
+          limit: pageSize,
+          page: options.pageOverride ?? currentPage,
           signal: options.signal,
           status: statusFilter === 'ALL' ? undefined : statusFilter,
         })
@@ -55,7 +70,7 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
         }
       }
     },
-    [statusFilter],
+    [currentPage, pageSize, statusFilter],
   )
 
   useEffect(() => {
@@ -85,7 +100,8 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
       await runScheduler({ secret: trimmedSecret })
 
       onSchedulerSuccess()
-      await loadSchedulerLogs({ showLoading: false })
+      setCurrentPage(1)
+      await loadSchedulerLogs({ pageOverride: 1, showLoading: false })
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -112,11 +128,31 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
             <select
               id="scheduler-status-filter"
               value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value as SchedulerStatusFilter)}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as SchedulerStatusFilter)
+                setCurrentPage(1)
+              }}
             >
               {schedulerStatusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="filter-field scheduler-page-size-field" htmlFor="scheduler-page-size">
+            <span>Rows</span>
+            <select
+              id="scheduler-page-size"
+              value={pageSize}
+              onChange={(event) => {
+                setPageSize(Number(event.target.value))
+                setCurrentPage(1)
+              }}
+            >
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
                 </option>
               ))}
             </select>
@@ -196,7 +232,7 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
         </div>
       ) : null}
 
-      {!isLoadingLogs && logs.length ? (
+      {!isLoadingLogs && logs.length > 0 ? (
         <div className="table-wrap">
           <table className="orders-table scheduler-table" aria-label="Scheduler logs">
             <thead>
@@ -226,6 +262,35 @@ export function SchedulerLogsPanel({ onSchedulerSuccess }: SchedulerLogsPanelPro
               ))}
             </tbody>
           </table>
+        </div>
+      ) : null}
+
+      {!isLoadingLogs && !errorMessage && totalLogs > 0 ? (
+        <div className="pagination-bar" aria-label="Scheduler logs pagination">
+          <span>
+            Showing {firstVisibleLog}-{lastVisibleLog} of {totalLogs}
+          </span>
+          <div className="pagination-actions">
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <strong>
+              Page {currentPage} of {totalPages}
+            </strong>
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={() => setCurrentPage((page) => page + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </button>
+          </div>
         </div>
       ) : null}
     </section>
