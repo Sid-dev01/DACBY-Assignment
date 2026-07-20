@@ -1,0 +1,339 @@
+{
+  "info": {
+    "_postman_id": "7f14690f-f9c0-42be-a2c4-9e61f0f0ad11",
+    "name": "DACBY Assignment API",
+    "description": "Postman collection for the DACBY Assignment order and scheduler APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{serverBaseUrl}}/health",
+              "host": [
+                "{{serverBaseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.orderId) {",
+                  "  pm.collectionVariables.set('orderId', json.data.orderId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Suresh\",\n  \"phoneNumber\": \"9876543210\",\n  \"items\": [\n    {\n      \"productName\": \"Wireless Mouse\",\n      \"quantity\": 2,\n      \"price\": 499\n    },\n    {\n      \"productName\": \"Mechanical Keyboard\",\n      \"quantity\": 1,\n      \"price\": 1499\n    }\n  ],\n  \"paymentStatus\": \"PAID\",\n  \"orderStatus\": \"PLACED\"\n}"
+            },
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders/create-order",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "create-order"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders/get-orders?page=1&limit=100&sortBy=createdAt&order=desc",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "get-orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Orders By Order Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders/get-orders?page=1&limit=100&orderStatus=PLACED&sortBy=createdAt&order=desc",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "get-orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                },
+                {
+                  "key": "orderStatus",
+                  "value": "PLACED"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Orders By Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders/get-orders?page=1&limit=100&paymentStatus=PAID&sortBy=createdAt&order=desc",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "get-orders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                },
+                {
+                  "key": "paymentStatus",
+                  "value": "PAID"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Order By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders/get-order/{{orderId}}",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "get-order",
+                "{{orderId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Scheduler",
+      "item": [
+        {
+          "name": "Run Scheduler",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-scheduler-secret",
+                "value": "{{schedulerSecret}}"
+              }
+            ],
+            "url": {
+              "raw": "{{apiBaseUrl}}/scheduler/process-orders",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "scheduler",
+                "process-orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Scheduler Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/scheduler/logs?page=1&limit=20&sortBy=createdAt&order=desc",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "scheduler",
+                "logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Scheduler Logs By Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{apiBaseUrl}}/scheduler/logs?page=1&limit=20&status=SUCCESS&sortBy=createdAt&order=desc",
+              "host": [
+                "{{apiBaseUrl}}"
+              ],
+              "path": [
+                "scheduler",
+                "logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "SUCCESS"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "serverBaseUrl",
+      "value": "http://localhost:4001",
+      "type": "string"
+    },
+    {
+      "key": "apiBaseUrl",
+      "value": "http://localhost:4001/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "schedulerSecret",
+      "value": "replace-with-your-secret",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
