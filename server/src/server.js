@@ -3,6 +3,8 @@ require("dotenv").config();
 const app = require("./app");
 const connectDB = require("./config/db");
 
+require('./cron');
+
 const PORT = process.env.PORT || 4001;
 
 const startServer = async () => {
