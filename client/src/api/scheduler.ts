@@ -7,6 +7,8 @@ type RunSchedulerOptions = {
 }
 
 type FetchSchedulerLogsOptions = {
+  limit?: number
+  page?: number
   signal?: AbortSignal
   status?: SchedulerStatus
 }
@@ -28,8 +30,8 @@ export function runScheduler(options: RunSchedulerOptions) {
 
 export async function fetchSchedulerLogs(options: FetchSchedulerLogsOptions) {
   const query = new URLSearchParams({
-    page: '1',
-    limit: '20',
+    page: String(options.page ?? 1),
+    limit: String(options.limit ?? 10),
     sortBy: 'createdAt',
     order: 'desc',
   })

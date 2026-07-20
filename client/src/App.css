@@ -419,6 +419,10 @@ h1 {
   width: 156px;
 }
 
+.scheduler-page-size-field select {
+  width: 92px;
+}
+
 .refreshing-pill {
   border-radius: 999px;
   padding: 6px 10px;
@@ -555,6 +559,33 @@ h1 {
 .scheduler-badge-partial-success {
   background: #fef3c7;
   color: #92400e;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid #e5eaf1;
+  padding: 14px 16px;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 620;
+}
+
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pagination-actions strong {
+  color: #273449;
+  font-size: 0.88rem;
+  font-weight: 720;
+  white-space: nowrap;
 }
 
 .state-card {
@@ -811,8 +842,19 @@ h1 {
   .button,
   .filter-field select,
   .filter-field input,
-  .scheduler-status-field select {
+  .scheduler-status-field select,
+  .scheduler-page-size-field select {
     width: 100%;
+  }
+
+  .pagination-bar,
+  .pagination-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination-bar {
+    text-align: center;
   }
 
   .panel-heading {
